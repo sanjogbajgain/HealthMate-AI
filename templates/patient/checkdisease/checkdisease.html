@@ -1,0 +1,371 @@
+{% extends "basic.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'patient/checkdisease/dps.css' %}">
+<style>
+  /* Modern styling for symptom checker */
+  .symptom-checker-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .symptom-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .symptom-dropdown {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .dropdown-toggle {
+    background-color: #2a8cff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 500;
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .dropdown-toggle:hover {
+    background-color: #1a73e8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .drop-content {
+    display: none;
+    position: absolute;
+    width: 100%;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 1rem;
+  }
+
+  .show {
+    display: block;
+  }
+
+  .searchbar {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .dropdown-item {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .dropdown-item:hover {
+    background-color: #f5f7fa;
+    color: #2a8cff;
+  }
+
+  .symptoms-box {
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .symptoms-list {
+    min-height: 100px;
+    padding: 1rem;
+  }
+
+  .symptom-tag {
+    display: inline-block;
+    background-color: #e9f5ff;
+    color: #2a8cff;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    margin: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  .predict-btn {
+    background-color: #00d4a3;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .predict-btn:hover {
+    background-color: #00b393;
+    transform: translateY(-2px);
+  }
+
+  .result-container {
+    display: none;
+    margin-top: 2rem;
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .disease-result {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1b405a;
+    margin-bottom: 1rem;
+  }
+
+  .confidence-meter {
+    margin: 1rem 0;
+  }
+
+  .progress {
+    height: 1.5rem;
+    border-radius: 50px;
+    background-color: #e9ecef;
+  }
+
+  .progress-bar {
+    background-color: #00d4a3;
+    font-weight: 500;
+  }
+
+  .info-more {
+    margin: 2rem 0;
+    color: #6c757d;
+  }
+
+  .consult-btn {
+    background-color: #2a8cff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 500;
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .consult-btn:hover {
+    background-color: #1a73e8;
+    transform: translateY(-2px);
+  }
+
+  .disclaimer {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #fff8e6;
+    border-left: 4px solid #ffc107;
+    color: #6c757d;
+  }
+</style>
+
+<script>
+  // Improved JavaScript with better error handling
+  document.addEventListener('DOMContentLoaded', function () {
+    // Toggle dropdown visibility
+    function toggleDropdown() {
+      document.getElementById("searchbar").value = '';
+      document.getElementById("myDropdown").classList.toggle("show");
+      searchSymptoms();
+    }
+
+    // Add symptom to the list
+    function addSymptom(name) {
+      const sympBox = document.getElementById("sympbox");
+      const symptomTag = document.createElement("div");
+      symptomTag.className = "symptom-tag";
+      symptomTag.textContent = name;
+      symptomTag.setAttribute("data-symptom", name);
+
+      // Add remove button
+      const removeBtn = document.createElement("span");
+      removeBtn.innerHTML = " &times;";
+      removeBtn.style.cursor = "pointer";
+      removeBtn.style.marginLeft = "8px";
+      removeBtn.onclick = function () {
+        sympBox.removeChild(symptomTag);
+      };
+
+      symptomTag.appendChild(removeBtn);
+      sympBox.appendChild(symptomTag);
+    }
+
+    // Search through symptoms
+    function searchSymptoms() {
+      let input = document.getElementById('searchbar').value.toLowerCase();
+      let items = document.getElementsByClassName('dropdown-item');
+
+      for (let i = 0; i < items.length; i++) {
+        if (!items[i].textContent.toLowerCase().includes(input)) {
+          items[i].style.display = "none";
+        } else {
+          items[i].style.display = "block";
+        }
+      }
+    }
+
+    // Close dropdown when clicking outside
+    window.onclick = function (event) {
+      if (!event.target.matches('.dropdown-toggle') &&
+        !event.target.matches('.searchbar') &&
+        !event.target.matches('.dropdown-item')) {
+        const dropdowns = document.getElementsByClassName("drop-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+          if (dropdowns[i].classList.contains('show')) {
+            dropdowns[i].classList.remove('show');
+          }
+        }
+      }
+    }
+
+    // Predict disease
+    document.getElementById("predict").addEventListener("click", function (event) {
+      event.preventDefault();
+
+      const symptoms = document.querySelectorAll("#sympbox .symptom-tag");
+      const symptomList = Array.from(symptoms).map(s => s.getAttribute("data-symptom"));
+
+      if (symptomList.length === 0) {
+        alert("Please add at least one symptom before predicting");
+        return;
+      }
+
+      // Show loading state
+      const predictBtn = document.getElementById("predict");
+      predictBtn.disabled = true;
+      predictBtn.textContent = "Analyzing...";
+
+      // Make AJAX request
+      $.ajax({
+        url: 'checkdisease',
+        type: "POST",
+        data: {
+          "noofsym": symptomList.length,
+          "symptoms": symptomList,
+          "csrfmiddlewaretoken": $('input[name=csrfmiddlewaretoken]').val()
+        },
+        dataType: 'json',
+        success: function (data) {
+          // Update results
+          document.getElementById('diseasefield').textContent = data.predicteddisease;
+          document.getElementById('percentage').textContent = data.confidencescore + "%";
+          document.getElementById('percentage').style.width = data.confidencescore + "%";
+          document.getElementById('diseasesearch').textContent = data.predicteddisease;
+          document.getElementById('consultdoctor').textContent = data.consultdoctor;
+
+          // Update Google search link
+          const searchLink = document.getElementById("href");
+          searchLink.href = `https://www.google.com/search?q=${encodeURIComponent(data.predicteddisease)}`;
+
+          // Show results
+          $("#resultdiv").show("slow");
+          $('html, body').animate({
+            scrollTop: $("#resultdiv").offset().top
+          }, 'slow');
+        },
+        error: function (xhr, status, error) {
+          alert("An error occurred while processing your request. Please try again.");
+          console.error("AJAX Error:", status, error);
+        },
+        complete: function () {
+          // Reset button
+          predictBtn.disabled = false;
+          predictBtn.textContent = "Predict";
+        }
+      });
+    });
+
+    // Initialize symptom items
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', function () {
+        addSymptom(this.textContent);
+      });
+    });
+
+    // Initialize dropdown button
+    document.querySelector('.dropdown-toggle').addEventListener('click', toggleDropdown);
+  });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="symptom-checker-container">
+  <div class="symptom-header">
+    <h2>Identify Possible Health Conditions</h2>
+    <p class="text-muted">Add your symptoms to get a preliminary assessment</p>
+  </div>
+
+  <div class="symptom-dropdown">
+    <button class="dropdown-toggle">Add Symptoms</button>
+    <div id="myDropdown" class="drop-content">
+      <div class="searchbardiv">
+        <input id="searchbar" class="searchbar" type="text" placeholder="Search symptoms..." autocomplete="off">
+      </div>
+      <div class="container" id="container-dropdown">
+        {% for symptom in list2 %}
+        <a class="dropdown-item">{{symptom}}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card symptoms-box">
+    <div class="card-header">Your Symptoms</div>
+    <div class="card-body symptoms-list" id="sympbox"></div>
+    <div class="card-footer text-center">
+      <button id="predict" class="predict-btn">Predict Possible Condition</button>
+    </div>
+  </div>
+
+  <div id="resultdiv" class="result-container">
+    <div class="text-center">
+      <div class="patient-info">
+        <span class="diseasefield">Patient: {{ user.patient.name }}</span>
+        <span class="diseasefield">Age: {{ user.patient.age }}</span>
+      </div>
+
+      <div class="disease-result">
+        Predicted condition: <span id="diseasefield"></span>
+      </div>
+
+      <div class="confidence-meter">
+        Confidence:
+        <div class="progress">
+          <div id="percentage" class="progress-bar">0%</div>
+        </div>
+      </div>
+
+      <div class="info-more">
+        <a id="href" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
+          Learn more about <span id="diseasesearch"></span>
+        </a>
+      </div>
+
+      <div class="disclaimer">
+        <h4>Important Disclaimer</h4>
+        <p>This tool does not provide medical advice. It is intended for informational purposes only.</p>
+        <p>It is not a substitute for professional medical advice, diagnosis or treatment.</p>
+      </div>
+
+      <div class="consult-section">
+        <form action="consult_a_doctor" method="GET">
+          {% csrf_token %}
+          <button type="submit" class="consult-btn">
+            Consult a <span id="consultdoctor"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

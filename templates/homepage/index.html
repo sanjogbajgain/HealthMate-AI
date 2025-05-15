@@ -1,0 +1,310 @@
+﻿{% extends "basic.html" %}
+{% load static %}
+
+{% block head %}
+<style>
+  .hero-section {
+    background: linear-gradient(135deg, #1b405a, #2a8cff);
+    color: white;
+    padding: 4rem 0;
+    border-radius: 10px;
+    margin-bottom: 3rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .hero-title {
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-description {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-button {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .role-section {
+    padding: 3rem 0;
+  }
+
+  .role-title {
+    font-weight: 600;
+    color: #1b405a;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .role-title:after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: #00d4a3;
+    margin: 0.5rem auto 0;
+  }
+
+  .role-card {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    border: none;
+    text-align: center;
+    padding: 2rem;
+    height: 100%;
+  }
+
+  .role-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .role-card img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    margin-bottom: 1.5rem;
+  }
+
+  .role-card h4 {
+    font-weight: 600;
+    color: #1b405a;
+    margin-bottom: 1rem;
+  }
+
+  .doctors-section {
+    background-color: #f8f9fa;
+    padding: 4rem 0;
+  }
+
+  .section-title {
+    font-weight: 600;
+    color: #1b405a;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .section-title:after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: #00d4a3;
+    margin: 1rem auto 0;
+  }
+
+  .doctor-card {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    border: none;
+  }
+
+  .doctor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .doctor-img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .doctor-card-body {
+    padding: 1.5rem;
+  }
+
+  .doctor-name {
+    font-weight: 600;
+    color: #1b405a;
+    margin-bottom: 0.5rem;
+  }
+
+  .doctor-location {
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  .contact-section {
+    padding: 3rem 0;
+    background-color: #1b405a;
+    color: white;
+  }
+
+  .contact-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .contact-list li {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .contact-list i {
+    margin-right: 1rem;
+    font-size: 1.2rem;
+    color: #00d4a3;
+  }
+
+  .copyright {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem 0;
+    margin-top: 2rem;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+  <div class="container">
+    <h1 class="hero-title">Be Your Own Health Advocate</h1>
+    <p class="hero-description">
+      Health Mate AI provides instant guidance on potential health concerns through our intelligent prediction system.
+      Our platform analyzes your symptoms using advanced data mining techniques to suggest possible conditions,
+      helping you make informed decisions about seeking medical care. While not a replacement for professional
+      diagnosis, our system serves as a valuable first step in understanding your health.
+    </p>
+
+    {% if not user.is_authenticated %}
+    <button class="btn btn-light cta-button" data-bs-toggle="modal" data-bs-target="#signinModal">
+      Get Started <i class="fas fa-arrow-right ms-2"></i>
+    </button>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Role Selection Section -->
+{% if not user.is_authenticated %}
+<section class="role-section">
+  <div class="container">
+    <h2 class="role-title text-center">Get Started With Health Mate AI</h2>
+    <div class="row">
+      <div class="col-md-4">
+        <a href="{% url 'sign_in_admin' %}" class="text-decoration-none">
+          <div class="role-card">
+            <img src="{% static 'homepage/admin.png' %}" alt="Administrator" class="img-fluid">
+            <h4>Administrator</h4>
+            <p>Manage system operations and user accounts</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{% url 'sign_in_doctor' %}" class="text-decoration-none">
+          <div class="role-card">
+            <img src="{% static 'homepage/doctor.png' %}" alt="Doctor" class="img-fluid">
+            <h4>Medical Professional</h4>
+            <p>Access patient data and provide consultations</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{% url 'sign_in_patient' %}" class="text-decoration-none">
+          <div class="role-card">
+            <img src="{% static 'homepage/patient.png' %}" alt="Patient" class="img-fluid">
+            <h4>Patient</h4>
+            <p>Get health predictions and guidance</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Doctors Section -->
+<section class="doctors-section">
+  <div class="container">
+    <h2 class="section-title text-center">Our Medical Experts</h2>
+    <div class="row">
+      <div class="col-md-4">
+        <div class="doctor-card">
+          <img src="{% static 'homepage/c31.jpg' %}" alt="Dr. Manish Bansal" class="doctor-img">
+          <div class="doctor-card-body">
+            <h5 class="doctor-name">Dr.Manoj Kc</h5>
+            <p class="doctor-location">
+              <i class="fas fa-map-marker-alt"></i> Ward No-14, Mitrapark Road,
+              , (chabil)
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="doctor-card">
+          <img src="{% static 'homepage/c41.jpg' %}" alt="Dr. Bansal Jatinder Paul" class="doctor-img">
+          <div class="doctor-card-body">
+            <h5 class="doctor-name">Dr.Pratik Poudel</h5>
+            <p class="doctor-location">
+              <i class="fas fa-map-marker-alt"></i> Om Niwas Basti, Koteshwor,
+              , kathmandu
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="doctor-card">
+          <img src="{% static 'homepage/s72.jpg' %}" alt="Dr. Radhika Swaroop" class="doctor-img">
+          <div class="doctor-card-body">
+            <h5 class="doctor-name">Dr.Anshu Ghimere</h5>
+            <p class="doctor-location">
+              <i class="fas fa-map-marker-alt"></i> Mechi Hospital, 1, Damak,
+              jhapa
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="contact-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <h3 class="text-center mb-4">Contact Us</h3>
+        <ul class="contact-list">
+          <li>
+            <i class="fas fa-envelope"></i>
+            <span>Email: healthmateai@gmail.com</span>
+          </li>
+          <li>
+            <i class="fas fa-phone"></i>
+            <span>Contact: 9078166555</span>
+          </li>
+          <li>
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Address: Asan, Dharara</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright text-center">
+      © 2023 Health Mate AI. All rights reserved.
+    </div>
+  </div>
+</section>
+{% endblock %}
